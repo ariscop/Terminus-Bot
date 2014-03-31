@@ -50,7 +50,7 @@ event :KICK do
   next unless @@syncs[channel]
 
   @@syncs[channel].each do |dest, sync|
-    if sync.include? "b" then
+    if sync.include? "k" then
       send_kick dest, kicked, "<#{@msg.user}> #{reason}"
       send_privmsg "#berrypunch", "#{channel} => #{dest}: #{@msg.user} kicked #{kicked} \"#{reason}\""
     end
