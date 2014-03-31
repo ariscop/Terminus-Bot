@@ -39,6 +39,7 @@ end
 
 event :KICK do
   next unless channel?
+  next if @msg.me?
 
   network = @connection.name
   channel = @msg.destination_canon
@@ -58,6 +59,7 @@ end
 
 event :MODE do
   next unless channel?
+  next if @msg.me?
 
   network = @connection.name
   channel = @msg.destination_canon
