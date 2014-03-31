@@ -53,10 +53,12 @@ event :KICK do
   dests = []
 
   @@syncs[channel].each do |dest, sync|
-    if sync.include? "k" then
-      send_kick dest, kicked, "<#{@msg.user}> #{reason}"
-      dests << dest
-    end
+    next unless sync.include? "k"
+    next unless @connection.channels.has_key? dest
+    next unless @connection.channels[dest].users.has_key? kicked
+
+    send_kick dest, kicked, "<#{@msg.user}> #{reason}"
+    dests << dest
   end
   send_privmsg "#berrypunch", "#{channel} => #{dests.join ", "}: #{@msg.user} kicked #{kicked} \"#{reason}\"" unless dests.empty?
 end
@@ -78,11 +80,12 @@ event :MODE do
   dests = []
 
   @@syncs[channel].each do |dest, sync|
-    if sync.include?("b") and modes.include?("b")
-      send_mode dest, "#{modes['b'] ? '+' : '-'}b #{params[1]}"
-      send_mode channel, "-b #{params[1]}" if modes['b']
-      dests << dest
-    end
+    next unless sync.include? "b"
+    next unless modes.include? "b"
+
+    send_mode dest, "#{modes['b'] ? '+' : '-'}b #{params[1]}"
+    send_mode channel, "-b #{params[1]}" if modes['b']
+    dests << dest
   end
   send_privmsg "#berrypunch", "#{channel} => #{dests.join ", "}: #{@msg.nick} set #{modes['b'] ? '+' : '-'}b #{params[1]}" unless dests.empty?
 end
