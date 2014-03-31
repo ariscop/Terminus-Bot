@@ -10,6 +10,7 @@ command 'syncbot', 'Configure syncbot' do
   dst = @connection.canonize @params[1]
   modes = @params[2].split ""
 
+  next if src == dst
   @@syncs[src] = {} unless @@syncs[src]
 
   @@syncs[src][dst] = modes
@@ -49,12 +50,15 @@ event :KICK do
 
   next unless @@syncs[channel]
 
+  dests = []
+
   @@syncs[channel].each do |dest, sync|
     if sync.include? "k" then
       send_kick dest, kicked, "<#{@msg.user}> #{reason}"
-      send_privmsg "#berrypunch", "#{channel} => #{dest}: #{@msg.user} kicked #{kicked} \"#{reason}\""
+      dests << dest
     end
   end
+  send_privmsg "#berrypunch", "#{channel} => #{dests.join ", "}: #{@msg.user} kicked #{kicked} \"#{reason}\"" unless dests.empty?
 end
 
 event :MODE do
@@ -71,13 +75,16 @@ event :MODE do
 
   modes = parse_mode params[0]
 
+  dests = []
+
   @@syncs[channel].each do |dest, sync|
     if sync.include?("b") and modes.include?("b")
       send_mode dest, "#{modes['b'] ? '+' : '-'}b #{params[1]}"
-      send_privmsg "#berrypunch", "#{channel} => #{dest}: #{@msg.nick} set #{modes['b'] ? '+' : '-'}b #{params[1]}"
       send_mode channel, "-b #{params[1]}" if modes['b']
+      dests << dest
     end
   end
+  send_privmsg "#berrypunch", "#{channel} => #{dests.join ", "}: #{@msg.nick} set #{modes['b'] ? '+' : '-'}b #{params[1]}" unless dests.empty?
 end
 
 helpers do
