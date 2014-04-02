@@ -79,15 +79,17 @@ event :MODE do
 
   dests = []
 
-  @@syncs[channel].each do |dest, sync|
-    next unless sync.include? "b"
-    next unless modes.include? "b"
+  modes.each do |mode, set|
+    next if mode == "k"
+    @@syncs[channel].each do |dest, sync|
+      next unless sync.include? mode
 
-    send_mode dest, "#{modes['b'] ? '+' : '-'}b #{params[1]}"
-    send_mode channel, "-b #{params[1]}" if modes['b']
-    dests << dest
+      send_mode dest, "#{modes[mode] ? '+' : '-'}#{mode} #{params[1]}"
+      send_mode channel, "-#{mode} #{params[1]}" if modes[mode] and mode == "b"
+      dests << dest
+    end
+    send_privmsg "#berrypunch", "#{channel} => #{dests.join ", "}: #{@msg.nick} set #{modes[mode] ? '+' : '-'}#{mode} #{params[1]}" unless dests.empty?
   end
-  send_privmsg "#berrypunch", "#{channel} => #{dests.join ", "}: #{@msg.nick} set #{modes['b'] ? '+' : '-'}b #{params[1]}" unless dests.empty?
 end
 
 helpers do
