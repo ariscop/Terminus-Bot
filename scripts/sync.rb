@@ -72,10 +72,11 @@ event :MODE do
   nick = @msg.nick
 
   params = @msg.raw_arr[3..-1]
-  next unless params.length > 1
+  next unless params.length >= 1
   next unless @@syncs[channel]
 
   modes = parse_mode params[0]
+  param = params.length >= 2 ? params[1] : ""
 
   dests = []
 
@@ -84,11 +85,11 @@ event :MODE do
     @@syncs[channel].each do |dest, sync|
       next unless sync.include? mode
 
-      send_mode dest, "#{modes[mode] ? '+' : '-'}#{mode} #{params[1]}"
-      send_mode channel, "-#{mode} #{params[1]}" if modes[mode] and mode == "b"
+      send_mode dest, "#{modes[mode] ? '+' : '-'}#{mode} #{param}"
+      send_mode channel, "-#{mode} #{param}" if modes[mode] and mode == "b"
       dests << dest
     end
-    send_privmsg "#berrypunch", "#{channel} => #{dests.join ", "}: #{@msg.nick} set #{modes[mode] ? '+' : '-'}#{mode} #{params[1]}" unless dests.empty?
+    send_privmsg "#berrypunch", "#{channel} => #{dests.join ", "}: #{@msg.nick} set #{modes[mode] ? '+' : '-'}#{mode} #{param}" unless dests.empty?
   end
 end
 
