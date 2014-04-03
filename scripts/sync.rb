@@ -75,38 +75,38 @@ event :MODE do
   next unless params.length >= 1
   next unless @@syncs[channel]
 
-  modes = parse_mode params[0]
-  param = params.length >= 2 ? params[1] : ""
+  modes = parse_mode params
 
-  dests = []
-
-  modes.each do |mode, set|
+  modes.each do |x|
+    dests = []
+    mode, set, param = x
     next if mode == "k"
     @@syncs[channel].each do |dest, sync|
       next unless sync.include? mode
 
-      send_mode dest, "#{modes[mode] ? '+' : '-'}#{mode} #{param}"
-      send_mode channel, "-#{mode} #{param}" if modes[mode] and mode == "b"
+      send_mode dest, "#{set ? '+':'-'}#{mode} #{param}"
+      send_mode channel, "-b #{param}" if set and mode == "b"
       dests << dest
     end
-    send_privmsg "#berrypunch", "#{channel} => #{dests.join ", "}: #{@msg.nick} set #{modes[mode] ? '+' : '-'}#{mode} #{param}" unless dests.empty?
+    send_privmsg "#berrypunch", "#{channel} => #{dests.join ", "}: #{@msg.nick} set #{set ? '+':'-'}#{mode} #{param}" unless dests.empty?
   end
 end
 
 helpers do
-  def parse_mode mode
-    keys = {}
+  def parse_mode params
+    modes = []
     plus = true
-    key = false
-    mode.each_char do |key|
-      if key == "+"
+    index = 1
+    params[0].each_char do |mode|
+      if mode == "+"
         plus = true
-      elsif key == "-"
+      elsif mode == "-"
         plus = false
       else
-        keys[key] = plus
+        modes << [mode, plus, params[index]]
+        index = index + 1
       end
     end
-    return keys
+    return modes
   end
 end
