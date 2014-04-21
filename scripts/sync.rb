@@ -1,7 +1,7 @@
 
 register 'Sync channel modes'
 
-@@syncs = get_all_data
+@@syncs = get_data :syncs, {}
 
 command 'syncbot', 'Configure syncbot' do
   level! 9 and argc! 3
@@ -15,7 +15,7 @@ command 'syncbot', 'Configure syncbot' do
 
   @@syncs[src][dst] = modes
 
-  store_data src, @@syncs[src]
+  store_data :syncs, @@syncs
 
   reply "#{src} => #{dst} : #{modes}"
 end
@@ -33,8 +33,8 @@ end
 command 'syncclear', 'List syncbot syncs' do
   level! 9 and argc! 0
 
-  init_data
-  @@syncs = get_all_data
+  store_data :syncs, {}
+  @@syncs = get_data :syncs
   reply "Cleared"
 end
 
@@ -75,9 +75,7 @@ event :MODE do
   next unless params.length >= 1
   next unless @@syncs[channel]
 
-  modes = parse_mode params
-
-  modes.each do |x|
+  parse_mode(params).each do |x|
     dests = []
     mode, set, param = x
     next if mode == "k"
