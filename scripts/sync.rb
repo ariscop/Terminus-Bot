@@ -17,7 +17,7 @@ command 'syncbot', 'Configure syncbot' do
 
   store_data :syncs, @@syncs
 
-  reply "#{src} => #{dst} : #{modes}"
+  reply "#{src} => #{dst} : #{modes.join}"
 end
 
 command 'synclist', 'List syncbot syncs' do
@@ -25,7 +25,7 @@ command 'synclist', 'List syncbot syncs' do
 
   @@syncs.each do |src, outer|
     outer.each do |dst, modes|
-      reply "#{src} => #{dst} : #{modes}"
+      reply "#{src} => #{dst} : #{modes.join}"
     end
   end
 end
@@ -42,51 +42,24 @@ event :KICK do
   next unless channel?
   next if @msg.me?
 
-  network = @connection.name
-  channel = @msg.destination_canon
-  nick = @msg.nick
-
   kicked, reason = @msg.parameters.split(/ :/, 2)  
-
-  next unless @@syncs[channel]
 
   dests = []
 
-  @@syncs[channel].each do |dest, sync|
-    next unless sync.include? "k"
-    next unless @connection.channels.has_key? dest
-    next unless @connection.channels[dest].users.has_key? kicked
-
-    send_kick dest, kicked, "<#{@msg.user}> #{reason}"
-    dests << dest
-  end
-  send_privmsg "#berrypunch", "#{channel} => #{dests.join ", "}: #{@msg.user} kicked #{kicked} \"#{reason}\"" unless dests.empty?
+  handle_mode @msg.destination_canon, @msg.destination_canon, dests, @msg.nick, "k", true, [kicked, reason]
+  send_privmsg "#berrypunch", "#{@msg.destination} => #{dests.join ", "}: #{@msg.nick} kicked #{kicked} \"#{reason}\"" unless dests.empty?
 end
 
 event :MODE do
   next unless channel?
   next if @msg.me?
 
-  network = @connection.name
-  channel = @msg.destination_canon
-  nick = @msg.nick
-
   params = @msg.raw_arr[3..-1]
-  next unless params.length >= 1
-  next unless @@syncs[channel]
-
   parse_mode(params).each do |x|
     dests = []
     mode, set, param = x
-    next if mode == "k"
-    @@syncs[channel].each do |dest, sync|
-      next unless sync.include? mode
-
-      send_mode dest, "#{set ? '+':'-'}#{mode} #{param}"
-      send_mode channel, "-b #{param}" if set and mode == "b"
-      dests << dest
-    end
-    send_privmsg "#berrypunch", "#{channel} => #{dests.join ", "}: #{@msg.nick} set #{set ? '+':'-'}#{mode} #{param}" unless dests.empty?
+    handle_mode @msg.destination_canon, @msg.destination_canon, dests, @msg.nick, mode, set, param
+    send_privmsg "#berrypunch", "#{@msg.destination} => #{dests.join ", "}: #{@msg.nick} set #{set ? '+':'-'}#{mode} #{param}" unless dests.empty?
   end
 end
 
@@ -106,5 +79,30 @@ helpers do
       end
     end
     return modes
+  end
+
+  def handle_mode channel, from, dests, user, mode, set, param
+    return unless @@syncs[channel]
+    @@syncs[channel].each do |dest, sync|
+      next unless sync.include? mode
+      next unless dest != from
+
+      if dest.chr == "@" then
+        dests << dest
+        handle_mode dest, from, dests, user, mode, set, param
+        next
+      end
+
+      if mode == "k" then
+        next unless @connection.channels.has_key? dest
+        next unless @connection.channels[dest].users.has_key? param[0]
+
+        send_kick dest, param[0], "<#{user}> #{param[1]}"
+      else
+        send_mode dest, "#{set ? '+':'-'}#{mode} #{param}"
+        send_mode channel, "-b #{param}" if set and mode == "b"
+      end
+      dests << dest
+    end
   end
 end
