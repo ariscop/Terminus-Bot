@@ -67,11 +67,35 @@ end
 
 helpers do
   def list_commands
-    reply Bot::Commands::COMMANDS.keys.sort.join(', ')
+    if get_config :multi_line, false
+      s = Bot::Commands::COMMANDS.keys.sort.join(', ').chars.to_a
+      line_length = get_config(:split_length, 400)
+      cmd_ary = []
+      until s.empty?
+        cmd_ary <<  s.shift(line_length).join
+      end
+      cmd_ary.each do |cmd|
+        reply cmd
+      end
+    else
+      reply Bot::Commands::COMMANDS.keys.sort.join(', ')
+    end
   end
 
   def list_scripts
-    reply Bot::Scripts.script_info.sort_by {|s| s.name}.map{|s| s.name}.join(', ')
+    if get_config :multi_line, false
+      s = Bot::Scripts.script_info.sort_by {|s| s.name}.map{|s| s.name}.join(', ').chars.to_a
+      line_length = get_config(:split_length, 400)
+      script_ary = []
+      until s.empty?
+        script_ary <<  s.shift(line_length).join
+      end
+      script_ary.each do |script|
+        reply script
+      end
+    else
+      reply Bot::Scripts.script_info.sort_by {|s| s.name}.map{|s| s.name}.join(', ')
+    end
   end
 end
 

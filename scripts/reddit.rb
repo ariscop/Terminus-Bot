@@ -1,8 +1,8 @@
 #
 # Terminus-Bot: An IRC bot to solve all of the problems with IRC bots.
 #
-# Copyright (C) 2010-2013 Kyle Johnson <kyle@vacantminded.com>, Alex Iadicicco
-# (http://terminus-bot.net/)
+# Copyright (C) 2010-2014 Kyle Johnson <kyle@vacantminded.com>, Alex Iadicicco
+# Rylee Fowler <rylee@rylee.me> (http://terminus-bot.net/)
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -140,7 +140,7 @@ helpers do
     json_get api, {}, true do |json|
       data = json['data']
 
-      reply "#{"[NSFW] " if data["over_18"]}#{data["url"]}: \02#{html_decode data["title"]}\02 - \02#{data["subscribers"]}\02 subscribers - #{html_decode data["public_description"]}", false
+      reply "#{"[NSFW] " if data["over_18"]}#{data["url"]}: \02#{html_decode data["title"]}\02 - \02#{data["subscribers"]}\02 subscribers - #{html_decode data["public_description"]}".slice(0, 512), false
     end
   end
 end

@@ -27,7 +27,8 @@ register 'Remember and recall short factoids.'
 
 command 'remember', 'Remember the given factoid. Should be in the form: ___ is|= ___' do
   argc! 1
-  arr = @params.first.downcase.split /\sis\s|\s=\s/, 2
+  arr = @params.first.split /\sis\s|\s=\s/, 2
+  arr[0].downcase!
 
   unless arr.length == 2
     raise "Factoid must be given in the form: ___ is|= ___"
@@ -45,7 +46,7 @@ end
 command 'forget', 'Forget this factoid.' do
   argc! 1
 
-  key = @params.first.downcase
+  key = @params.first.downcase.rstrip
 
   if get_data(key) == nil
     raise "No such factoid."
@@ -58,7 +59,7 @@ end
 command 'factoid', 'Retrieve a factoid.' do
   argc! 1
 
-  key = @params.first.downcase
+  key = @params.first.downcase.rstrip
 
   factoid = get_data key
 

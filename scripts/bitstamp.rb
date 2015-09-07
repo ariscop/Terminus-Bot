@@ -1,7 +1,7 @@
 #
 # Terminus-Bot: An IRC bot to solve all of the problems with IRC bots.
 #
-# Copyright (C) 2010-2014 Rylee Elise Fowler <rylee@rylee.me>
+# Copyright (C) 2010-2014 Rylee Fowler <rylee@rylee.me>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@ need_module! 'http'
 
 register 'interface with the bitstamp bitcoin API'
 
-command 'bitstamp', 'Get the current BTC -> USD exchange rate from BitStamp' do
+command 'btc', 'Get the current BTC -> USD exchange rate from BitStamp' do
   uri = URI('https://www.bitstamp.net/api/ticker/')
 
   json_get uri do |json|
@@ -42,3 +42,4 @@ command 'bitstamp', 'Get the current BTC -> USD exchange rate from BitStamp' do
     reply data
   end
 end
+# vim: set tabstop=2 expandtab:

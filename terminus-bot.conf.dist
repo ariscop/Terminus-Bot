@@ -670,6 +670,21 @@ tell = {
 }
 
 
+# Help script for listing commands and scripts
+help = {
+  # Enable line splitting for help output? If you have more commands loaded
+  # than the maximum line length of the ircd, using this will send multiple
+  # messages per invocation of the help command.
+  # default: false
+  #multi_line = false
+  #
+  # Number of characters max in one line before splitting, if the above 
+  # multi_line is true. 
+  # default: 400
+  split_length = 400
+}
+
+
 # UPC look-up script (upcdatabase.org).
 upc = {
 

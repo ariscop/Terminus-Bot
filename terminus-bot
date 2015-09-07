@@ -30,10 +30,6 @@ unless RUBY_VERSION.start_with? '1.9' or RUBY_VERSION.start_with? '2'
   abort 'Ruby version 1.9 or better is required.'
 end
 
-unless FileTest.exists? 'terminus-bot.conf'
-  abort 'No config file found.'
-end
-
 VERSION  = 'Terminus-Bot v0.8'
 PID_FILE = 'var/terminus-bot.pid'
 LICENSE  = 'MIT'
@@ -60,6 +56,11 @@ OptionParser.new do |opts|
     $opts[:config_file] = v
   end
 
+  $opts[:database_file] = 'var/terminus-bot/data.db'
+  opts.on '-d', '--database FILE', 'Use another database file (default: var/terminus-bot/data.db)' do |v|
+    $opts[:database_file] = v
+  end
+
   $opts[:fork] = true
   opts.on '-f', '--no-fork', 'Don\'t run in the background' do |v|
     $opts[:fork] = false
@@ -72,9 +73,14 @@ OptionParser.new do |opts|
 
 end.parse!
 
+unless FileTest.exists? $opts[:config_file]
+  abort "Config file #{$opts[:config_file]} not found. Exiting."
+end
+
 require 'thread'
 require 'logger'
 require 'eventmachine'
+require 'fileutils'
 
 $log = Logger.new(STDOUT)
 $log.level = $opts[:verbose] ? Logger::DEBUG : Logger::INFO
